@@ -9,16 +9,15 @@
 """
 
 
+import sys
 from random import randint
 from copy import deepcopy
-
-import sys
-
 from menu import start_menu
 from drw import draw_grid
 
+
 sys.setrecursionlimit(10**6)
-sys.tracebacklimit = 0 # To reduce the footprint of the annoying queue warning, remove when fixed
+
 
 """ Helper functions for checking operator's conditions """
 
@@ -64,7 +63,7 @@ def eat(state, is_front = True) -> None:
                 pos = i
 
         valid_spaces: int = len(state) - len(have_fruits_or_player)
-        random_space = -1
+        random_space = -1 # Not used, why here?
         if is_front:
             random_space: int = randint(0, valid_spaces)
             rndm_queue.append(random_space)
@@ -102,8 +101,6 @@ def move_left(state) -> list[list[str]] | None:
 
 
 """ Function that checks if current state is a goal state """
-
-
 def is_goal_state(state):
     """Return true if state is a goal state
     
@@ -121,8 +118,6 @@ def is_goal_state(state):
 
 
 """ Function that finds the children of current state """
-
-
 def find_children(state: list[list[str]]) -> list[list[list[str]]]:
     """Find the blocks next to Pacman"""
     children = []
@@ -153,7 +148,6 @@ def find_children(state: list[list[str]]) -> list[list[list[str]]]:
 
 
 def make_front(state):
-    """Make front :)"""
     return [state]
 
 
@@ -162,20 +156,13 @@ def make_front(state):
 **** επέκταση μετώπου    
 """
 
-# Kept for reference
-#
-# def print_front(f):
-#     """Print front :)"""
-#     for i in f:
-#         print(i)
-
-# drw.py compatible print_front
 def print_front(f :list[list[list[str]]]):
     for i in range(0, len(f), 1):
         draw_grid(f[i], False)
 
+
 def count_fruit(state):
-    """Count fruits for BestFS"""
+    """Count fruit for BestFS"""
     cntr = 0
     for f in state:
         if f[1] == "f":
@@ -184,8 +171,9 @@ def count_fruit(state):
             cntr += 2
     return cntr
 
+
 def expand_front(front: list[list[list[str]]], method):
-    """Calculate the next parts of the front base on the given method
+    """Calculate the next parts of front based on the given method
 
     Parameters:
     front -- Initial front state
@@ -241,7 +229,6 @@ def expand_front(front: list[list[list[str]]], method):
 ** Αρχικοποίηση ουράς
 """
 
-
 def make_queue(state):
     return [[state]]
 
@@ -251,17 +238,12 @@ def make_queue(state):
 **** επέκταση ουράς
 """
 
-# Kept for reference
-#
-# def print_queue(q):
-#     for i in q:
-#         for j in i:
-#             print(j)
 
 # draw_grid() compatible print queue
 def print_queue(q):
     for i in range(0, len(q), 1):
         print_front(q[i])
+
 
 def extend_queue(
     queue: list[list[list[list[str]]]],
@@ -269,8 +251,6 @@ def extend_queue(
 ) -> list[list[list[list[str]]]]:
     """Φτιάχνει τη σειρά από την αρχική στην τελική/μερική κατάσταση"""
 
-    # Δε θα ήταν καλύτερο το queue copy να αρχικοποιείται εδώ έξω από τα ifs για να αποφευχθεί το warning;
-    # queue_copy = deepcopy(queue)
 
     if method == "DFS":
         print("\033[1;36mQueue:\033[0m")
@@ -316,10 +296,8 @@ def extend_queue(
                     break
             if not inserted:
                 queue_copy.append(path)
-    # else: "other methods to be added"
 
-    # WARN: IGNORE WARNING HERE. PLEASE!!!
-    return queue_copy
+    return queue_copy # ignore warning
 
 
 """ ----------------------------------------------------------------------------
@@ -378,12 +356,6 @@ def main():
 
     method = start_menu() # Defaults to BFS (the fastest)
 
-    # Kept for reference
-    #
-    # if len(sys.argv) > 1:
-    #     method = sys.argv[1]
-    #     if method not in ["DFS", "BFS", "BestFS"]:
-    #         raise ValueError(f"Not an Implemented method: {method}")
 
     """ ----------------------------------------------------------------------------
     **** starting search

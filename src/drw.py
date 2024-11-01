@@ -1,5 +1,5 @@
-from time import sleep
 import os
+from time import sleep
 
 
 def clear_screen():
@@ -26,7 +26,7 @@ class Pacman_colors:
 
 
 # Color list items, yellow for Pacman, red for fruit and magenta for poisoned fruit
-def color_items(string):
+def color_items(string) -> str:
     row = ""
     for char in string:
         match char:

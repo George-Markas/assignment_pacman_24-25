@@ -6,17 +6,7 @@ from enum import Enum
 from cursor import Cursor
 
 
-Method = Enum("Method", ["BFS", "DFS", "BestFS"])
-
-
-def hide_cursor() -> None:
-    sys.stdout.write("\033[?25l")
-    sys.stdout.flush()
-
-
-def show_cursor() -> None:
-    sys.stdout.write("\033[?25h")
-    sys.stdout.flush()
+Method = Enum("Method", ["BestFS", "DFS", "BFS"])
 
 
 def get_method_name_from_opt(option):
@@ -29,14 +19,14 @@ def get_method_name_from_opt(option):
 def draw_interactive_menu():
     print("\n ┌Select method──────────────┐\n"
           " │                           │\n"
-          " │    1. BFS         (*)     │\n"
+          " │    1. BestFS      (*)     │\n"
           " │    2. DFS         ( )     │\n"
           " │    3. BestFS      ( )     │\n"
           " │                           │\n"
           " └Nxt↓─Prv↑─────────Sel⏎─Ext␛┘\n", end="")
 
 
-def method_select(opt, obj) -> None:
+def method_select(opt) -> None:
     #   Changing the selected method works as follows:
     #       1. Clear asterisk on current position.
     #       2. Set cursor position one line up/down corresponding to the newly selected method.
@@ -48,25 +38,25 @@ def method_select(opt, obj) -> None:
             Cursor.replace(' ')
             Cursor.set_pos(4, 23)
             Cursor.replace('*')
-            Cursor.move(obj, left = 1)
+            Cursor.move(left = 1)
         case 1:
             Cursor.replace(' ')
-            Cursor.set_pos(5, 23)
+            Cursor.set_pos(5,23)
             Cursor.replace('*')
-            Cursor.move(obj, left=1)
+            Cursor.move(left = 1)
         case 2:
             Cursor.replace(' ')
             Cursor.set_pos(6, 23)
             Cursor.replace('*')
-            Cursor.move(obj, left=1)
+            Cursor.move(left = 1)
 
 
 def draw_simple_menu() -> None:
     print(" ┌Select method──────────────┐\n"
           " │                           │\n"
-          " │         1. BFS            │\n"
+          " │         1. BestFS         │\n"
           " │         2. DFS            │\n"
-          " │         3. BestFS         │\n"
+          " │         3. BFS            │\n"
           " │         0. \x1B[3mexit\x1B[0m           │\n"
           " │                           │\n"
           " └───────────────────────────┘\n"
@@ -75,8 +65,8 @@ def draw_simple_menu() -> None:
 
 def show_help() -> None:
     print("\npacman [\x1B[3mFLAG\x1B[0m]...[\x1B[3mOPTION\x1B[0m]...\n\n"
-          "-m, --menu\n\n\tStart the program with a menu. Options: \x1B[3msimple, interactive\x1B[0m\n\n"
-          "-s, --silent\n\n\tSkip all menus and run directly by providing a method as an argument. Options: \x1B[3mBFS, DFS, BestFS\x1B[0m\n\n"
+          "-m, --menu\n\n\tStart the program with a menu, defaults to interactive. Options: \x1B[3msimple\x1B[0m\n\n"
+          "-s, --silent\n\n\tSkip all menus and run directly by providing a method as an argument. Options: \x1B[3mbfs, dfs, bestfs\x1B[0m\n\n"
           "-h, --help\n\n\tDisplay help page.\n\n"
           "<none>\n\n\tRuns outright by defaulting to BFS.\n")
 
@@ -85,9 +75,8 @@ def menu_interactive():
     opt: int = 0
     clear_screen()
     draw_interactive_menu()
-    obj = Cursor()
-    obj.set_pos(4, 23) # Default position (option 1)
-    hide_cursor()
+    Cursor.set_pos(4, 23) # Default position (option 1)
+    Cursor.hide()
     while True:
         if keyboard.is_pressed("up"):
             # If 2nd or 3rd is selected, go to previous, else wrap around to last.
@@ -95,7 +84,7 @@ def menu_interactive():
                 opt -= 1
             else:
                 opt = 2
-            method_select(opt, obj)
+            method_select(opt)
             time.sleep(0.1)
         elif keyboard.is_pressed("down"):
             # If 1st or 2nd is selected, go to next, else wrap around to first
@@ -103,7 +92,7 @@ def menu_interactive():
                 opt += 1
             else:
                 opt = 0
-            method_select(opt, obj)
+            method_select(opt)
             time.sleep(0.1)
         elif keyboard.is_pressed("enter"):
             return get_method_name_from_opt(opt)
@@ -132,16 +121,24 @@ def start_menu():
     if len(sys.argv) > 1:
         match sys.argv[1]:
             case ("--menu" | "-m"):
-                if sys.argv[2] == "simple":
+                if len(sys.argv) < 3 or not sys.argv[2]:  # Defaults to interactive if no argument is given for -m
+                    method = menu_interactive()
+                    Cursor.show()
+                    return method
+                elif sys.argv[2] == "simple":
                     method = menu_simple()
                     return method
-                elif sys.argv[2] == "interactive":
-                    method = menu_interactive()
-                    show_cursor()
-                    return method
+                else:
+                    print("\n\033[0;31mError: \033[0minvalid menu option\n")
             case ("--help" | "-h"):
                 show_help()
             case ("--silent" | "-s"):
+                try:
+                    sys.argv[2]
+                except IndexError:
+                    print("\n\033[0;31mError: \033[0msecond argument is missing\n")
+                    sys.exit(-1)
+
                 if sys.argv[2] == "bfs":
                     return "BFS"
                 elif sys.argv[2] == "dfs":
